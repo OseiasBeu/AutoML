@@ -1,0 +1,88 @@
+language: python
+matrix:
+  include:
+  - os: linux
+    python: '3.5'
+  - os: linux
+    python: '3.6'
+  - os: linux
+    python: '3.7'
+  - os: osx
+    language: generic
+    python: '3.5'
+    before_install:
+    - brew install libomp
+    - brew upgrade pyenv
+    - brew install pyenv-virtualenv
+    - pyenv install 3.5.6
+    - eval "$(pyenv init -)"
+    - pyenv virtualenv 3.5.6 venv
+    - pyenv activate venv
+  - os: osx
+    language: generic
+    python: '3.6'
+    before_install:
+    - brew install libomp
+    - brew upgrade pyenv
+    - brew install pyenv-virtualenv
+    - pyenv install 3.6.7
+    - eval "$(pyenv init -)"
+    - pyenv virtualenv 3.6.7 venv
+    - pyenv activate venv
+  - os: osx
+    language: generic
+    python: '3.7'
+    before_install:
+    - brew install libomp
+    - brew upgrade pyenv
+    - brew install pyenv-virtualenv
+    - pyenv install 3.7.2
+    - eval "$(pyenv init -)"
+    - pyenv virtualenv 3.7.2 venv
+    - pyenv activate venv
+  - os: windows
+    language: sh
+    python: '3.5'
+    before_install:
+    - choco install python --version 3.5.4
+    - export PATH="/c/Python35:/c/Python35/Scripts:$PATH"
+  - os: windows
+    language: sh
+    python: '3.6'
+    before_install:
+    - choco install python --version 3.6.7
+    - export PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+  - os: windows
+    language: sh
+    python: '3.7'
+    before_install:
+    - choco install python --version 3.7.2
+    - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+install:
+- pip install coverage
+- pip install codecov
+- pip install -U pytest
+- pip install --upgrade setuptools wheel
+script:
+- python setup.py install
+- cd tests
+- if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.7" ] ; then
+  coverage run -m --source=../mlbox/ pytest; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.7" ] ; then
+  pytest; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ] ; then pytest; fi
+- if [ "$TRAVIS_OS_NAME" = "windows" ] ; then pytest; fi
+- cd ..
+after_success:
+- codecov
+deploy:
+  provider: pypi
+  user: AxeldeRomblay
+  password:
+    secure: l4S5cjkkjhj82j3Tq51/zkBEkjOfSl9xaISu9rmcQNQUbsqp1qrLiKmcMVm0mirNezhTnNdeeCWRyeuvXBNpbRq37KKM6NGScmbAPdCKZeDw6/wDOwjzaMpsnzynq7EiowrgrawwffTa1kP6dgzkG4U/ftjd1jNdNMmOz5MyMnkS2cVv2Uy0o/g7MPQ1hIVAGpoLtnjJ+iGZrQrCWGOr9zp6k003T0xGlS9oEPLM1yid1s1Aeeq8p8Jaee2gGbhpOZ8fySHPcBX2e7TThgoqwfN/wvDzBwko5VPHTaWiVa9FW4zirwyE9EK8LmjAuodF63QOBujO5YTCf1ja5iC5czxZrjNsZCznXmsVqZlyetF2aMofDk++0T0zCmXpMRjivmLV0O/ZSl/HDkMua1TdPuink+FKdGrwCH/IzyeAfT95yVisiRpmgNAhn8/IW/U8v87voquy+YoVL6egSjoB5EyEnzSoojK7qyRPCPmFmKcJHK3aoT3yocwgOSgClqX1gbrYrXAKkXR8lPp7VlZdNKIbKQLu6TILAOVILsAU2MFJbomMAREL/kM9tB3jOj34gKl0qghMOM10BUnWZ3L+MrNamm/0nrnFhlsI8OIVB47ahOnhVZsLk1H2LGZDwBvJTv2gzEG0mUaQaA45/dxJWvR9IZpObEu6T/U/e+uKI+g=
+  skip_existing: true
+  skip_cleanup: true
+  on:
+    condition: $TRAVIS_OS_NAME != "windows"
+    repo: AxeldeRomblay/MLBox
+    branch: master
